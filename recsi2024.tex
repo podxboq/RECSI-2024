@@ -1,0 +1,645 @@
+%%% Enviado a JNIC 2024 hasta Proposici on 5.6 incluida
+
+\newcommand{\CLASSINPUTinnersidemargin}{18mm}
+\newcommand{\CLASSINPUToutersidemargin}{12mm}
+\newcommand{\CLASSINPUTtoptextmargin}{20mm}
+\newcommand{\CLASSINPUTbottomtextmargin}{25mm}
+\documentclass[10pt,conference,a4paper]{IEEEtran}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Tildes y demás caracteres en castellano...
+%\usepackage[latin1]{inputenc}
+% o bien
+\usepackage[utf8]{inputenc}
+\usepackage{caption}
+\usepackage{color,soul}
+
+%%% Fuente Times...
+\usepackage{times}
+
+%%% Hipervínculos
+\usepackage{float}
+\usepackage[pdftex,
+  colorlinks=true,
+  pdfstartview=FitV,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=black]{hyperref}
+
+%%% Environments
+\newtheorem{notacion}{Notación}[subsection]
+\newtheorem{ejemplo}{Ejemplo}
+\newtheorem{prop}{Proposición}[section]
+
+%%% Macros
+\providecommand{\abs}[1]{\lvert#1\rvert}
+
+%%% Figuras en formato .png, .ps, pdf o eps
+\usepackage{graphicx}
+\usepackage{cancel}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{subfigure}
+\DeclareGraphicsExtensions{.png,.eps,.ps,.pdf}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+
+%%% Formato y tipografía de URL, direcciones de correo...
+\usepackage{url}
+%\usepackage{hyperref}
+
+%%% Sección para definir explícitamente la separación de sílabas al final de una línea:
+\hyphenation{si-guien-do}
+
+%%% Secciones etc. en castellano
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[spanish]{babel}
+
+\sloppy
+
+\begin{document}
+
+%%% Título
+%\title{Optimización de Circuitos Cuánticos Mediante Técnicas Algebraicas}
+\title{Herramientas Algebraicas para el Algoritmo de Grover}
+
+%%% Autores
+\author{\IEEEauthorblockN{Jorge Garcia-Diaz}
+\IEEEauthorblockA{Universidad de La Laguna\\
+Tenerife, Spain\\
+alu0101439679@ull.edu.es }
+\and
+\IEEEauthorblockN{Francisco Costa-Cano }
+\IEEEauthorblockA{Universidad Internacional de La Rioja\\
+Logroño, Spain\\
+podxboq@gmail.com}
+\and
+\IEEEauthorblockN{Daniel Escanez-Exposito}
+\IEEEauthorblockA{Universidad de La Laguna\\
+Tenerife, Spain\\
+jescanez@ull.edu.es}
+\and
+\IEEEauthorblockN{Pino Caballero-Gil}
+\IEEEauthorblockA{Universidad de La Laguna\\
+Tenerife, Spain\\
+pcaballe@ull.edu.es}}
+
+
+\maketitle
+
+
+%%% Resumen
+\begin{abstract}
+  La computación cuántica se ha convertido en uno de los campos de investigación más destacados en muchas instituciones académicas y tecnológicas. Este interés surge de su utilidad para abordar problemas extremadamente complejos que resultan intratables con ordenadores tradicionales. Esta posibilidad representa una amenaza significativa para los sistemas criptográficos vigentes debido sobre todo a la existencia de los algoritmos cuánticos de Shor y de Grover. Este estudio se centra en el uso de técnicas algebraicas para aumentar la eficiencia, disminuir los errores, y facilitar el desarrollo de algoritmos cuánticos avanzados y el estudio de los correspondientes circuitos cuánticos. Concretamente,  este artículo se centra en el algoritmo de Grover, aunque las herramientas algebraicas propuestas pueden ser usadas también para otros algoritmos ya que la nueva notación no solo mejora la comprensión de los circuitos cuánticos y elimina problemas de la notación tradicional, sino que también ayuda a identificar patrones para optimizar los circuitos.  
+\end{abstract}
+
+
+%%% Palabras clave
+\vspace{1mm}
+\begin{IEEEkeywords}
+Computación cuántica, Circuitos cuánticos, Criptología, Algoritmo de Grover, Algoritmo de Shor
+\end{IEEEkeywords}
+
+
+\section{Introducción}
+Actualmente la computación cuántica representa un novedoso paradigma de cómputo que ofrece ventajas significativas en comparación con la computación clásica para ciertos problemas específicos. Entre estas ventajas, destaca su capacidad para romper algunos algoritmos criptográficos actuales como el  RSA \cite{Shor} \cite{RSA}, y afectar la longitud de las claves de otros como el AES \cite{grover} \cite{grover_aes}. Sin embargo, no debe verse únicamente como una amenaza, sino también como una aliada para el futuro de la ciberseguridad, ya que permite sentar las bases para nuevos y revolucionarios algoritmos criptográficos cuánticos \cite{BB84} \cite{BB2014} \cite{E91}. 
+
+La construcción de ordenadores cuánticos escalables y tolerantes a fallos sigue siendo un desafío, principalmente debido a dos razones: los circuitos cuánticos, que son componentes esenciales de los algoritmos cuánticos, son susceptibles a errores e ineficiencias que dificultan su implementación práctica \cite{error_correction}; y el hardware cuántico actual no está lo suficientemente avanzado como para implementar estos circuitos de manera efectiva \cite{IBM_hardware}. Por ello, es necesario investigar no solo en el desarrollo de hardware y algoritmos cuánticos, sino también en la mejor manera de implementar estos algoritmos con el hardware existente. Este trabajo presenta una alternativa a este problema desde una perspectiva novedosa: la optimización de los circuitos cuánticos mediante técnicas algebraicas. Estas técnicas  proporcionan un marco poderoso para analizar y manipular los circuitos y algoritmos cuánticos, ofreciendo un enfoque sistemático para identificar redundancias, explotar simetrías y simplificar las computaciones cuánticas. Esto contribuirá a la crucial optimización de los circuitos cuánticos, superando las limitaciones inherentes del hardware cuántico actual. El objetivo de este trabajo es mostrar una nueva notación optimizada aplicándola al algoritmo de Grover y demostrar varios resultados que puedan ayudar a optimizar los circuitos cuánticos para posibilitar su implementación. Además, se han creado diagramas de diferentes circuitos cuánticos utilizando la librería \textit{Quantikz} \cite{quantikz}.
+
+Este artículo se estructura de la siguiente manera: en la Sección \ref{seccion:2} se introducen los diagramas de circuitos cuánticos y su notación tradicional, incluyendo un ejemplo para ilustrar las debilidades de esta notación. En la Sección \ref{seccion:3} se presenta la nueva notación optimizada junto con varios ejemplos para facilitar su comprensión y su aplicación al algoritmo de Shor. En la Sección \ref{seccion:4} se examina el algoritmo de Grover, mostrando sus respectivas formas de representación. En la Sección \ref{seccion:5} se exponen y demuestran diversos resultados obtenidos utilizando la nueva notación, finalizando con las conclusiones y propuestas para futuros trabajos en la Sección \ref{seccion:6}.
+
+\section{Notación tradicional}
+\label{seccion:2}
+La forma más extendida de representación en computación cuántica es mediante  circuitos cuánticos \cite{Deutsch}. Estos circuitos pueden representarse de dos maneras principales: mediante diagramas o mediante  notación tradicional  \cite{Nielsen_Chuang}. Los diagramas tienen la ventaja de ser visualmente intuitivos, facilitando la comprensión y visualización del funcionamiento del circuito. Sin embargo, esta forma de representación tiene también importantes inconvenientes. Uno de estos problemas es lo mal que escalan en tamaño dichos diagramas, ya que los diagramas de circuitos que requieren cientos o miles de cúbits y puertas cuánticas no se pueden representar de manera comprensible. La notación algebraica comúnmente utilizada, que en este trabajo se llamará notación tradicional, se adapta mejor en términos de tamaño en comparación con los diagramas, aunque aún necesita un espacio considerable. Además, presenta dos problemas importantes: las puertas controladas y el hecho de que se lee de manera opuesta a los diagramas de circuitos cuánticos. Una buena manera de entender estos problemas es mediante ejemplos, como los incluidos en la \textit{Fig. \ref{Fig1}}, donde se muestran dos circuitos cuánticos, representados con sus respectivos diagramas.
+
+\hypertarget{fig:ejemplos}{
+\begin{figure}[htb!]
+    \centering
+    \subfigure[Circuito 1]{
+        \begin{quantikz}
+            \lstick{$\ket{0}$}& \ctrl{1} &\\
+            \lstick{$\ket{0}$}& \gate{U} &\\ 
+        \end{quantikz}}
+    \subfigure[Circuito 2]{
+        \begin{quantikz}
+            \lstick{$\ket{0}$}& \gate{U} &\\
+            \lstick{$\ket{0}$}& \ctrl{-1} &\\ 
+        \end{quantikz}}
+    \caption{Ejemplos de circuitos}
+    \label{Fig1}
+\end{figure}}
+
+En la literatura, dependiendo del autor, la notación $CU$ se suele utilizar para representar la puerta controlada asociada a la transformación unitaria $U$ con el el primer cúbit como control y el segundo como objetivo (estos cúbits deben ser contiguos en el circuito). Sin embargo, la inmensa mayoría de  autores usan la notación $CU$ para representar todas las puertas controladas asociadas a $U$ sin tener en cuenta los cúbits de control, pues si no, haría falta usar las puertas $SWAP$, lo que aumenta bastante el tamaño de la notación tradicional. En la \textit{Fig. \ref{Fig2}} se exponen las notaciones tradicionales correspondientes a los circuitos mostrados en la \textit{Fig. \ref{Fig1}}.
+ 
+ 
+\begin{figure}[htb!]
+\begin{center}
+    Circuito 1: \boxed{CU\ket{0}^{\otimes 2}}\\
+    \vspace{1mm}
+    Circuito 2: \boxed{CU\cdot SWAP\ket{0}^{\otimes 2}\ \underset{\xcancel{SWAP}}{\longrightarrow} \ CU\ket{0}^{\otimes 2}}\\
+    \end{center}
+    \caption{Ejemplos de notaciones tradicionales}
+        \label{Fig2}
+\end{figure}
+
+Como se puede observar, si se obvia el uso de la puerta $SWAP$ (como se suele hacer), las notaciones tradicionales de ambos circuitos son idénticas. Por esta razón, en la literatura, dependiendo del autor, la notación tradicional mostrada en la \textit{Fig. \ref{Fig2}} se utiliza para referirse tanto al Circuito 1 como al Circuito 2, aunque estos circuitos sean distintos. Esto puede llevar fácilmente a confusiones y errores. Este es un ejemplo muy básico de uno de los mayores defectos de la notación tradicional: las puertas cuánticas de varios cúbits no están bien definidas en la mayoría de los casos y por ello se suele abusar de la notación con ellas. Este es un fallo de la notación tradicional, ya que para saber de qué manera y en qué cúbits actúa una puerta cuántica de varios cúbits, siempre es necesario comparar con el diagrama del circuito. En otras palabras, la notación tradicional no es autosuficiente, pues en la mayoría de los casos es necesario leer el diagrama junto con la notación tradicional para poder entender el efecto de las puertas sobre los kets o simplemente para conocer la forma de la matriz asociada a la puerta cuántica en cuestión. Además, esta notación se lee en el sentido opuesto al diagrama del circuito, lo cual puede generar confusión y errores, ya que siempre es necesario contrastar con el diagrama del circuito, como se ha mencionado previamente.
+
+Por  tanto, tal como se indicó, este estudio presenta una nueva notación optimizada que elimina estas desventajas y también incorpora algunas ventajas adicionales. Además, se prueban varios resultados interesantes que pueden ser empleados para disminuir el número de cúbits y puertas cuánticas requeridas, optimizando así diversos algoritmos cuánticos.
+
+
+%%% Consejos generales de formato y estilo
+\section{Preliminares}
+\label{seccion:3}
+A continuación se introduce la notación optimizada utilizada en este trabajo tanto para cúbits como para puertas cuánticas \cite{JNIC}. Además, se añaden varios ejemplos para entender mejor cómo se utiliza  la notación introducida.
+
+\subsection{Cúbits}
+La forma más extendida de representar los cúbits es la notación bra-ket \cite{Dirac_notation}, también conocida como notación de Dirac, la cual será usada en este trabajo.
+\begin{notacion}
+    Sea $\ket{a}=\ket{a_1\ldots a_n}$ un estado producto de $n$ cúbits, entonces se escribe:
+    \begin{align}
+    \begin{split}
+                \ket{a}&=\alpha_{k0}\ket{a_1\ldots a_{k-1}0a_{k+1}\ldots a_n}\\
+                &+\alpha_{k1}\ket{a_1\ldots a_{k-1}1a_{k+1}\ldots a_n}
+    \end{split}
+    \end{align}
+    donde $\alpha_{k0}, \alpha_{k1}\in\mathbb{C}$ y $\abs{\alpha_{k0}}^2+\abs{\alpha_{k1}}^2=1$.
+    \label{not:1}
+\end{notacion}
+
+\begin{ejemplo}
+    Sean $\ket{a_1a_2}$ dos cúbits en estado producto, entonces aplicando la notación mencionada se obtiene:
+    \begin{align*}
+        \ket{a_1a_2}&=\alpha_{10}\ket{0a_2}+\alpha_{11}\ket{1a_2}\\
+        &=\alpha_{10}\alpha_{20}\ket{00}+\alpha_{10}\alpha_{21}\ket{01}\\
+        &+\alpha_{11}\alpha_{20}\ket{10}+\alpha_{11}\alpha_{21}\ket{11}
+    \end{align*}
+\end{ejemplo}
+
+\begin{notacion}
+    Fijados $n$ cúbits $\ket{a}=\ket{a_1\ldots a_n}$ en estado producto, se utilizará la siguiente notación:
+    \begin{equation}
+        \ket{a}_j^k=\ket{a_1\ldots a_{k-1}ja_{k+1}\ldots a_n};\ k\in\{1,\ldots, n\}
+        \label{not:2}
+    \end{equation}
+\end{notacion}
+
+\begin{ejemplo}
+    Sea $\ket{a}=\ket{a_1\ldots a_n}$ y $k\in\{1,\ldots,n\}$, entonces se tiene:
+    $$\ket{a}=\alpha_{k0}\ket{a}_0^k+\alpha_{k1}\ket{a}_1^k$$
+\end{ejemplo}
+
+
+\subsection{Puertas Cuánticas}
+
+\begin{notacion}
+    Sea $A$ una puerta cuántica con cúbit objetivo $\ket{a_j}$, entonces se usa la siguiente notación:
+    \begin{equation}
+        \ket{a_1\ldots a_{j-1}}\otimes A\ket{a_j}\otimes \ket{a_{j+1}\ldots a_n}=\ket{a_1\ldots a_{j}Aa_{j+1}\ldots a_n}
+        \label{not:3}
+    \end{equation}
+\end{notacion}
+
+\begin{notacion}
+    Si $A$ es una puerta cuántica con cúbit objetivo $\ket{a_k}$, donde $k\in\{1,\ldots, n\}$, entonces se escribe:
+    \begin{equation}
+        \ket{a_1\ldots a_k A a_{k+1}\ldots a_n}=\ket{a}A_k=\ket{a}_A^k
+        \label{not:4}
+    \end{equation}
+\end{notacion}
+
+\begin{ejemplo}
+\begin{align*}
+    \ket{010}H_2&=\ket{01H0}=\ket{010}_H^2\\
+    &=\ket{0}\otimes H\ket{1}\otimes\ket{0}\\
+    &=\ket{0}\otimes\left(\dfrac{\ket{0}-\ket{1}}{\sqrt{2}}\right)\otimes\ket{0}\\
+    &=\dfrac{\ket{000}-\ket{010}}{\sqrt{2}}
+\end{align*}
+Se denotan los estados $\ket{+}=\dfrac{\ket{0}+\ket{1}}{\sqrt{2}}$ y $\ket{-}=\dfrac{\ket{0}-\ket{1}}{\sqrt{2}}$.
+\end{ejemplo}
+\vspace{1mm}
+\begin{notacion}
+    Sea $R\subseteq \{1,\ldots,n\}$ y $A$ una puerta cuántica cualquiera con un cúbit objetivo, entonces se denota:
+    \begin{equation}
+        A_R=\displaystyle\prod_{k\in R}A_k
+        \label{not:5}
+    \end{equation}
+\end{notacion}
+Para que esta notación tenga sentido, hay que probar que $\ket{a}A_iA_k=\ket{a}A_kA_i$ para cualquier estado $\ket{a}=\ket{a_1\ldots a_n}$ y $i,k\in\{1,\ldots,n\}$ con $i\neq k$. Se supone sin pérdida de generalidad que $i<k$:\\
+\begin{align*}
+    \ket{a}A_iA_k&=\ket{a_1\ldots a_n}A_iA_k\\
+    &=\ket{a_1\ldots a_iA\ldots a_kA \ldots a_n}\\
+    &=\ket{a_1\ldots a_iA \ldots a_n}A_k\\
+    &=\ket{a_1\ldots a_n}A_k A_i\\
+    &=\ket{a}A_kA_i
+\end{align*}
+\vspace{1mm}
+\begin{notacion}
+    El conjunto $\{j,j+1,\ldots,k\}$, donde $j,k\in\{1,\ldots,n\}$ y $j<k$ se escribirá como:
+    \begin{equation}
+        j:k= \{j,j+1,\ldots,k\}
+        \label{not:6}
+    \end{equation}
+\end{notacion}
+
+\begin{ejemplo}
+    \begin{align*}
+        \ket{101010}X_{2:4}=\ket{110110}
+    \end{align*}
+\end{ejemplo} 
+\vspace{0.1cm}
+\subsection{Puertas Cuánticas Controladas}
+
+\begin{notacion}
+\label{not:controladas}
+    Sean $\ket{a}$ un estado de $n$ cúbits y $A$ una puerta cuántica con cúbit de control $\ket{a_k}$ y cúbit objetivo $\ket{a_j}$, entonces se utiliza la siguiente notación:
+    \begin{equation}
+        \ket{a}A_j^k
+    \end{equation}
+\end{notacion}
+\begin{ejemplo}
+\begin{align*}
+    \ket{00}H_1X_2^1=\dfrac{\ket{00}+\ket{10}_X^2}{\sqrt{2}}=\dfrac{\ket{00}+\ket{11}}{\sqrt{2}}
+\end{align*}
+\end{ejemplo}
+
+\subsection{Aplicación para el Algoritmo de Shor}
+En esta sección se presenta un ejemplo de aplicación de la notación optimizada introducida mediante uno de los algoritmos más relevantes en la computación cuántica, el algoritmo de Shor \cite{Shor}. Este algoritmo es célebre por su capacidad para resolver el problema de la factorización de números enteros de la forma $N=p\cdot q$, donde $p$ y $q$ son números primos, con coste polinomial. Es importante señalar que, en la actualidad, la resolución de este problema con computación clásica tiene un coste sub-exponencial pero super-polinomial (algoritmo GFNS \cite{GNFS} \cite{GNFS_book}). 
+
+El algoritmo de Shor representa una amenaza significativa para la criptografía moderna, ya que, por ejemplo, permite quebrantar el sistema criptográfico RSA \cite{attack_RSA}. Debido a algoritmos como el de Shor, se hace cada vez más urgente invertir esfuerzos en el desarrollo de nuevos protocolos seguros para las comunicaciones, dado que criptosistemas como el RSA deben ser reemplazados. Sin embargo, el algoritmo de Shor aún está lejos de ser implementado en un ordenador cuántico real para los tamaños de clave utilizados actualmente \cite{schnorr} \cite{integer-factoring} \cite{Shor_PD} \cite{Shor_21}. Este algoritmo se basa esencialmente en el circuito de estimación de fase, cuyo circuito y notaciones tradicional y optimizada se muestran en las \textit{Fig. \ref{fig:shor}, \ref{Fig10}} y \textit{\ref{Fig11}}.
+\begin{figure}[htb!]
+\centering
+\begin{tikzpicture}
+\node[scale=0.9]{
+    \boxed{
+    \begin{aligned}
+            &\hspace{25mm}(I^{\otimes n}\otimes M^{\otimes 2n})(I^{\otimes n}\otimes QFT_{2^{2n}}^{\dagger})\\
+            &\left(\displaystyle\prod_{i=0}^{2n-1}(CU_{a^{2n-1-i}}\otimes I^{\otimes 2n-1})\right)(I^{\otimes n}\otimes H^{\otimes 2n})(\ket{(1)_2}\otimes\ket{0}^{\otimes 2n})
+    \end{aligned}}};
+\end{tikzpicture}
+\caption{Notación tradicional de la búsqueda del orden}
+        \label{Fig10} 
+\end{figure}
+\vspace{-3mm}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.93]{
+$$\boxed{(\ket{0}^{\otimes 2n}\otimes\ket{(1)_2})H_{1:2n}\displaystyle\prod_{i=0}^{2n-1}(U_{a^{2^i}})_{2n+1:3n}^{i+1}(QFT_{2^{2n}}^{\dagger})_{1:2n}M_{1:2n}}$$};
+\end{tikzpicture}
+\caption{Notación optimizada de la búsqueda del orden}
+        \label{Fig11} 
+\end{figure}
+
+\begin{figure}[htb!]
+    \begin{center}
+    \begin{tikzpicture}
+    \node[scale=0.7]{
+    \begin{quantikz}
+        \lstick[4]{$\ket{0}^{\otimes 2n}$}& \gate{H} & \ctrl{4}  & &\ \ldots \ & & \gate[4]{QFT^{\dagger}_{2^{2n}}} & \meter{} &\setwiretype{c}\\
+        &\ \ \vdots \ \ &  &\ctrl{3} & \ \ldots \ &  &  & \ \ \vdots \ \ & \setwiretype{c} \\
+        & \gate{H} &  &  & \ \ldots \ & & & \meter{}  &\setwiretype{c} \\
+        & \gate{H} &  & & \ \ldots \ & \ctrl{1} & & \meter{} &\setwiretype{c}\\
+        \lstick{$\ket{(1)_2}$}&\qwbundle{n} & \gate{U_a} & \gate{U_{a^2}} &\ \ldots \ & \gate{U_{a^{2^{2n-1}}}} & &  & \\
+    \end{quantikz}};
+    \end{tikzpicture}
+    \caption{Circuito para la búsqueda del orden}
+    \label{fig:shor}
+    \end{center}
+\end{figure}
+
+Como se aprecia en la \textit{Fig. \ref{Fig10}}, la notación tradicional se lee de manera totalmente inversa al diagrama del circuito (de derecha a izquierda), mientras que la nueva notación optimizada sí que se lee de la misma manera (de izquierda a derecha). Se puede identificar que la notación tradicional no resulta muy adecuada para representar los cúbits de control y objetivo de las puertas controladas. En cambio, como se ha mencionado, en concreto en la {\it Notación~(\ref{not:controladas})}, con la nueva notación optimizada sí que es posible. Asimismo, este ejemplo destaca lo compleja y confusa que puede volverse la notación tradicional, así como la gran cantidad de espacio que puede ocupar. En contraste, la notación optimizada utiliza menos espacio y es bastante mas sencillo de trabajar con ella.
+
+\section{Algoritmo de Grover}
+\label{seccion:4}
+El algoritmo de Grover \cite{grover} es un algoritmo que permite resolver el problema de búsqueda no estructurada con mayor eficiencia que con la computación clásica. Este problema se puede interpretar como encontrar $m$ soluciones $w\in\{0,1\}^n$ de forma que $f(w)=1$ donde $f:\{0,1\}^n\mapsto\{0,1\}$ es una aplicación arbitraria dada a modo de oráculo. Específicamente, este algoritmo lo resuelve  con alta probabilidad, requiriendo solo $O(\sqrt{2^n})$ evaluaciones de $f$ mientras que mediante computación clásica se necesitan $O(2^n)$ evaluaciones. El algoritmo de Grover permite realizar una búsqueda exhaustiva en una lista en un tiempo menor que el tamaño de la lista. Por tanto, este algoritmo afecta principalmente la seguridad de los criptosistemas simétricos como  el AES \cite{grover_aes} \cite{groverattack}.
+
+En la \textit{Fig. \ref{fig:grover}} se introduce el diagrama asociado al circuito cuántico del algoritmo de Grover y en la \textit{Fig. \ref{not:grover-trad}} y \textit{\ref{not:grover}} la notación tradicional y optimizada asociada a dicho circuito.
+
+\begin{figure}[htb!]
+\begin{center}
+\begin{tikzpicture}
+\hspace{-3mm}\node[scale=0.65]{
+    \begin{quantikz}
+    \lstick[4]{$\ket{0}^{\otimes n}$} & \gate{H} & \gate[4]{Z_f} & \gate{H} & \gate[4]{Z_{OR}} & \gate{H} & \ \cdots \ & \gate[4]{Z_f} & \gate{H} & \gate[4]{Z_{OR}} & \gate{H}\\
+    & \ \ \vdots \ \ &  & \ \ \vdots \ \ &  & \ \ \vdots \ \ & \ \cdots \ &  & \ \ \vdots \ \ &  & \ \ \vdots \ \ \\
+    & \gate{H} &  & \gate{H} &  & \gate{H}& \ \cdots \ &  & \gate{H} &  & \gate{H}\\
+    & \gate{H} &  & \gate{H} &  & \gate{H}& \ \cdots \ &  & \gate{H} &  & \gate{H}\\
+    \end{quantikz}};
+\end{tikzpicture}
+    \caption{Circuito asociado al algoritmo de Grover} \label{fig:grover}
+\end{center}
+\end{figure}
+
+\begin{figure}[htb!]
+\centering
+\begin{tikzpicture}
+\node[scale=0.93]{
+$$\boxed{\displaystyle\prod_{i=1}^{\lfloor\frac{\pi}{4}\sqrt{\frac{2^n}{m}}\rfloor}\biggl(H^{\otimes n}(Z_{OR})^{\otimes n}H^{\otimes n}(Z_{f})^{\otimes n}\biggr)H^{\otimes n}\ket{0}^{\otimes n}}$$};
+\end{tikzpicture}
+\caption{Notación tradicional del algoritmo de Grover}
+\label{not:grover-trad}
+\end{figure}
+
+\begin{figure}[htb!]
+\centering
+\begin{tikzpicture}
+\node[scale=0.93]{
+$$\boxed{\ket{0}^{\otimes n}H_{1:n}\displaystyle\prod_{i=1}^{\lfloor\frac{\pi}{4}\sqrt{\frac{2^n}{m}}\rfloor}\biggl((Z_f)_{1:n}H_{1:n}(Z_{OR})_{1:n}H_{1:n}\biggr)}$$};
+\end{tikzpicture}
+\caption{Notación optimizada del algoritmo de Grover}
+\label{not:grover}
+\end{figure}
+
+\noindent donde las puertas $Z_f$ y $Z_{OR}$ cumplen que:
+$$Z_f\ket{x}=(-1)^{f(x)}\ket{x}\quad ; \quad Z_{OR}=\begin{cases}
+    \ket{x}, & x=0^n\\
+    -\ket{x}, & x\neq 0^n
+\end{cases}$$
+A la puerta $Z_f$ se le suele denominar oráculo de $f$ y a la puerta $Z_{OR}$ operación de reflexión. También se suele llamar operación de difusión a $H^{\otimes n}Z_{OR}H^{\otimes n}=2\ket{+}^{\otimes n}\bra{+}^{\otimes n}-\mathds{1}$.
+\subsection{Implementación para 2 Cúbits}
+A continuación se muestra una implementación para el caso de dos cúbits ($n=2$) y una única solución ($m=1$), en específico $w=00\in\{0,1\}^2$. Para esta implementación se necesita $\lfloor\frac{\pi}{4}\sqrt{2^2}\rfloor=1$ iteración. En la \textit{Fig. \ref{fig:grover-2}} se muestra el diagrama del circuito cuántico para dicha implementación y en las \textit{Fig. \ref{not:grovertrad-2}, \ref{not:groveropt-2}} sus notaciones asociadas.
+
+\begin{figure}[htb!]
+\begin{center}
+\begin{tikzpicture}
+\node[scale=0.93]{
+    \begin{quantikz}
+\lstick{$\ket{0}$}& \gate{H}& \gate{X}\gategroup[2,steps=3,style={inner
+sep=6pt,dashed,rounded corners},label style={label
+position=below,anchor=north,yshift=-0.2cm}]{$Z_f$} &
+\ctrl{1} & \gate{X} &
+\gate{H} & \gate{Z}\gategroup[2,steps=2,style={inner
+sep=6pt,dashed,rounded corners},label style={label
+position=below,anchor=north,yshift=-0.2cm}]{$Z_{OR}$} & \ctrl{1} & \gate{H} \\
+\lstick{$\ket{0}$} & \gate{H} & \gate{X} & \control{} & \gate{X} & \gate{H} & \gate{Z} &
+ \control{} & \gate{H}
+\end{quantikz}};
+\end{tikzpicture}
+    \caption{Algoritmo de Grover para 2 cúbits y $w=00$} \label{fig:grover-2}
+\end{center}
+\end{figure}
+\vspace{-5mm}
+\begin{figure}[htb!]
+\centering
+\begin{tikzpicture}
+\node[scale=1]{
+$$\boxed{H^{\otimes 2}(CZ) Z^{\otimes 2}H^{\otimes 2}X^{\otimes 2}(CZ)X^{\otimes 2} H^{\otimes 2}\ket{00}}$$};
+\end{tikzpicture}
+\caption{Notación tradicional para $w=00$}
+\label{not:grovertrad-2}
+\end{figure}
+\vspace{-5mm}
+\begin{figure}[htb!]
+\centering
+\begin{tikzpicture}
+\node[scale=1]{
+$$\boxed{\ket{00}H_{1:2}X_{1:2}Z_1^2X_{1:2}H_{1:2}Z_{1:2}Z_1^2H_{1:2}}$$};
+\end{tikzpicture}
+\caption{Notación optimizada para $w=00$}
+\label{not:groveropt-2}
+\end{figure}
+
+En general, la notación asociada a todas las posibles implementaciones para dos cúbits y una única solución se muestra en las \textit{Fig. \ref{not:grover2gen}} y \textit{\ref{not:grover2gentrad}}, donde $w=w_1w_2\in\{0,1\}^2$ y $\Omega=\{i\in\{1,2\} \ |\ w_i=0\}$.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.93]{
+$$\boxed{\ket{00}H_{1:2}X_{\Omega}Z_1^2X_{\Omega}H_{1:2}Z_{1:2}Z_1^2H_{1:2}}$$};
+\end{tikzpicture}
+\caption{Notación optimizada para Grover con dos cúbits}
+\label{not:grover2gen}
+\end{figure}
+\vspace{-4mm}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.8]{
+$\hspace{-1.3cm}\bullet\quad w=00\ \longrightarrow\ \boxed{H^{\otimes 2}(CZ) Z^{\otimes 2}H^{\otimes 2}X^{\otimes 2}(CZ)X^{\otimes 2} H^{\otimes 2}\ket{00}}$};
+\end{tikzpicture}
+\end{figure}
+\vspace{-8mm}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.8]{
+$\hspace{-3mm}\bullet\quad w=01\ \longrightarrow\ \boxed{H^{\otimes 2}(CZ) Z^{\otimes 2}H^{\otimes 2}(I\otimes X)(CZ)(I\otimes X) H^{\otimes 2}\ket{00}}$};
+\end{tikzpicture}
+\end{figure}
+\vspace{-8mm}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.8]{
+$\hspace{-3mm}\bullet\quad w=10\ \longrightarrow\ \boxed{H^{\otimes 2}(CZ) Z^{\otimes 2}H^{\otimes 2}(X\otimes I)(CZ)(X\otimes I) H^{\otimes 2}\ket{00}}$};
+\end{tikzpicture}
+\end{figure}
+\vspace{-8mm}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[scale=0.8]{
+$\hspace{-2.7cm} \bullet\quad w=11\ \longrightarrow\ \boxed{H^{\otimes 2}(CZ) Z^{\otimes 2}H^{\otimes 2}(CZ) H^{\otimes 2}\ket{00}}\hfill$};
+\end{tikzpicture}
+\caption{Notación tradicional para Grover con dos cúbits}
+\label{not:grover2gentrad}
+\end{figure}
+
+\section{Resultados}
+\label{seccion:5}
+Aquí se introducen varias propiedades y relaciones entre algunas puertas cuánticas y ciertos estados de cúbits. Se utiliza  la notación $(j)_2$ para expresar la notación binaria de $j$.
+
+El primer resultado   describe el efecto que tiene  una puerta cuántica $A_R$ sobre un autovector con autovalor asociado $\lambda_i$.
+\vspace{1mm}
+\begin{prop}
+    Sea $A$ una puerta cuántica y $\ket{a}$ un estado de $n$ cúbits tal que:
+    $$\ket{a}A_i=\lambda_i\ket{a},\ \forall i\in \{1,\ldots, n\}$$
+    es decir, que $\ket{a}$ sea un autovector de $A_i$ con autovalor asociado $\lambda_i$ para todo $i\in \{1,\ldots, n\}$. Entonces, si 
+    $R\subseteq\{1,\ldots, n\}$:
+    
+    \begin{equation}
+        \ket{a}A_R=\displaystyle\left(\prod_{i\in R}\lambda_i\right)\ket{a}
+    \end{equation}
+    \label{prop:3.5}
+\end{prop}
+ \begin{proof}[Demostración] 
+    \begin{align*}
+         \ket{a}A_R&=\ket{a}\displaystyle\prod_{i\in R}A_i=\displaystyle\prod_{i\in R}\ket{a}A_i=\displaystyle\left(\prod_{i\in R}\lambda_i\right)\ket{a}
+    \end{align*}
+\end{proof}
+\vspace{1mm}
+Como consecuencia directa de la proposición anterior, se demuestra un resultado que explica el comportamiento de una puerta con respecto a un autovector cuando su autovalor asociado es $-1$.
+\vspace{1mm}
+\begin{prop}
+    Sea $A$ una puerta cuántica y $\ket{a}$ un estado de $n$ cúbits tal que:
+    $$\ket{a}A_i=-\ket{a},\ \forall i\in \{1,\ldots, n\}$$
+    es decir, que $\ket{a}$ sea un autovector de $A_i$ con autovalor asociado $-1$ para todo $i\in \{1,\ldots, n\}$. Entonces si 
+    $R,S\subseteq\{1,\ldots, n\}$:
+    \begin{equation}
+        \ket{a}A_R=(-1)^{\abs{R}-\abs{S}}\ket{a}A_S
+    \end{equation}
+    \label{prop:4}
+    
+\noindent donde $\abs{R}$ y $\abs{S}$ representan los cardinales de $R$ y $S$.
+\end{prop}
+\begin{proof}[Demostración] 
+    Aplicando la \textit{Proposición} (\ref{prop:3.5}) para $\lambda_i=-1,\ \forall \lambda_i$
+        
+    $$\ket{a}A_S=\ket{a}\displaystyle\prod_{k\in S}A_k=(-1)^{\abs{S}}\ket{a}$$
+    $$\Longrightarrow \ket{a}=(-1)^{-\abs{S}}\ket{a}A_S$$
+    Además: 
+    \begin{align*}
+    \ket{a}A_R =& (-1)^{\abs{R}}\ket{a}\\
+    \Longrightarrow&\ket{a}A_R=(-1)^{\abs{R}}\cdot(-1)^{-\abs{S}}\ket{a}A_S\\
+    \Longrightarrow &\ket{a}A_R=(-1)^{\abs{R}-\abs{S}}\ket{a}A_S
+\end{align*}
+    \end{proof}
+\vspace{1mm}
+A continuación, se demuestra que el resultado anterior se puede aplicar a la puerta $X$.
+\vspace{1mm}
+\begin{prop}
+    Sean $R, S\subseteq \{1,\ldots, n\}$, entonces:
+    \begin{equation}
+       \ket{-}^{\otimes n} X_R=(-1)^{\abs{R}-\abs{S}}\ket{-}^{\otimes n}X_S
+    \end{equation}
+    \label{prop:5} 
+\end{prop}
+\begin{proof}[Demostración] 
+    La demostración de este resultado se basa en demostrar lo siguiente:
+    $$ \ket{-}^{\otimes n} X_i =  -\ket{-}^{\otimes n},\:\forall i\in \{1,\ldots, n\}$$
+    Para ello demostraremos que $\ket{-}X=-\ket{-}$:
+    \begin{align*}
+        \ket{-}X&=\dfrac{1}{\sqrt{2}}\left(\ket{0}-\ket{1}\right)X\\
+        &=\dfrac{1}{\sqrt{2}}\left(\ket{1}-\ket{0}\right)X\\
+        &=-\ket{-}
+    \end{align*}
+    
+Una vez obtenido esto se consigue:
+\begin{align*}
+    \ket{-}^{\otimes n}X_i&=\ket{-}^{\otimes i-1}\otimes X\ket{-}\otimes\ket{-}^{\otimes n-i}\\
+    &=\ket{-}^{\otimes i-1}\otimes -\ket{-}\otimes\ket{-}^{\otimes n-i}\\
+    &=-\ket{-}^{\otimes n}
+\end{align*}
+Aquí se está suponiendo que $i\neq 1$ y $i\neq n$. Estos casos se demuestran de manera análoga:
+\vspace{1mm}
+\begin{itemize}
+    \item $\ket{-}^{\otimes n}X_1=-\ket{-}\otimes\ket{-}^{\otimes n-1}=-\ket{-}^{\otimes n}$
+    \vspace{1mm}
+    \item $\ket{-}^{\otimes n}X_n=\ket{-}^{\otimes n-1}\otimes-\ket{-}=-\ket{-}^{\otimes n}$
+\end{itemize}
+\vspace{1mm}
+Ahora basta aplicar la \textit{Proposición} (\ref{prop:4}) para $A=X$ y \\
+$\ket{a}=\ket{-}^{\otimes n}$:
+$$\Longrightarrow  \ket{-}^{\otimes n} X_R=(-1)^{\abs{R}-\abs{S}}\ket{-}^{\otimes n}X_S$$
+\end{proof}
+\vspace{1mm}
+El siguiente resultado  generaliza la aplicación de un conjunto de puertas $H$ a cualquiera de los cúbits del estado $\ket{-}^{\otimes n}$.
+\vspace{1mm}
+\begin{prop}
+	Sea $R\subseteq \{1,\ldots,n\}$ y $\abs{R}=Card(R)$, entonces:
+	\begin{equation}
+		\ket{-}^{\otimes n}H_R=\dfrac{1}{\sqrt{2^{n-\abs{R}}}}\displaystyle\sum_{\substack{j=0\\(j)_{2,i}=1, \,\forall i\in R}}^{2^n-1}(-1)^{w((j)_2)+\abs{R}}\ket{(j)_2}
+	\end{equation}
+    \label{prop:9}
+    donde se denota el peso de Hamming de la cadena binaria $(j)_2$ como $w((j)_2)$.
+\end{prop}
+\begin{proof}[Demostración] 
+	Teniendo en cuenta:
+    \begin{align*}
+        \ket{a}H_i H_i&=\left(\alpha_{i0}\ket{a}_+^i\alpha_{i1}\ket{a}_-^i\right)H_i\\
+        &=\alpha_{i0}\ket{a}_0^i\alpha_{i1}\ket{a}_1^i=\ket{a}
+    \end{align*}
+    
+	y que $\ket{-}^{\otimes n}=\ket{1}^{\otimes n}H_{1:n}$, se obtiene:
+	$$\ket{-}^{\otimes n}H_R=\ket{1}^{\otimes n}H_{1:n}H_R=\ket{1}^{\otimes n}H_{R^c}$$
+	\noindent donde  $R^c=\{1,\ldots, n\}\backslash R$, es decir:\\
+    $$R^c=\{i\in\{1,\ldots, n\} \; / \; i\not\in R\}\ \text{(Complementario de R)}$$
+	Para seguir con la demostración, será de gran ayuda introducir la siguiente aplicación (función característica):
+	$$\chi_{R^c}(i)= \left\{ \begin{array}{llc} 
+		0 & , & i\not\in R^c \\ 
+		1 & , & i\in R^c \end{array} \right.$$
+
+	Haciendo uso de esto:
+        $$\ket{1}^{\otimes n}H_{R^c}=\bigotimes_{i=1}^{n}\biggl(\ket{-}\cdot \chi_{R^c}(i)+\ket{1}\cdot \underbrace{\left(1-\chi_{R^c}(i)\right)}_{\chi_R(i)}\biggr)$$
+        $$=\bigotimes_{i=1}^{n}\biggl(\dfrac{1}{\sqrt{2}}(\ket{0}-\ket{1})\cdot \chi_{R^c}(i)+\ket{1}\cdot \chi_R(i) \biggr)$$
+        $$=\dfrac{1}{\sqrt{2^{\abs{R^c}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\not\in R^c}}^{2^n-1}(-1)^{w((j)_2)-\abs{R}}\ket{(j)_2}$$
+	Ahora, aplicando la definición de $R^c$: 
+    $$\abs{R^c}=n-\abs{R}\ \land \ i\not\in R^c\Longleftrightarrow i\in R$$ 
+    Por tanto:
+	$$\dfrac{1}{\sqrt{2^{\abs{R^c}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\not\in R^c}}^{2^n-1}(-1)^{w((j)_2)-\abs{R}}\ket{(j)_2}=$$
+	$$=\dfrac{1}{\sqrt{2^{n-\abs{R}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\in R}}^{2^n-1}(-1)^{w((j)_2)-\abs{R}}\ket{(j)_2}$$
+\end{proof}
+\vspace{1mm}
+Como consecuencia directa del resultado anterior se obtiene el siguiente.
+\vspace{1mm}
+\begin{prop}
+    Sea $R\subseteq \{1,\ldots,n\}$, entonces:
+	\begin{equation}
+		\ket{1}^{\otimes n}H_R = \dfrac{1}{\sqrt{2^{\abs{R}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\not\in R}}^{2^n-1}(-1)^{w((j)_2)-n+\abs{R}}\ket{(j)_2}
+	\end{equation}
+ \label{prop:10}
+\end{prop}
+\begin{proof}[Demostración] 
+    Teniendo en cuenta que $\ket{a}H_i H_i=\ket{a}$, basta aplicar \textit{Proposición \ref{prop:9}} para $R^c$, pues: 
+    $$\ket{-}^{\otimes n}H_{R^c}=\ket{1}^{\otimes n}H_{1:n}H_{R^c}=\ket{1}^{\otimes n}H_R$$
+    Aplicando \textit{Proposición \ref{prop:9}} para $R^c$:
+    $$\ket{1}^{\otimes n}H_R=\ket{-}^{\otimes n}H_{R^c}$$
+    $$=\dfrac{1}{\sqrt{2^{n-\abs{R^c}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\in R^c}}^{2^n-1}(-1)^{w((j)_2)-\abs{R^c}}\ket{(j)_2}$$
+    $$=\dfrac{1}{\sqrt{2^{\abs{R}}}}\displaystyle\sum_{\substack{j=0\\ (j)_{2,i}=1, \,\forall i\not\in R}}^{2^n-1}(-1)^{w((j)_2)-n+\abs{R}}\ket{(j)_2}$$
+\end{proof}
+\vspace{1mm}
+Para finalizar esta sección, se demuestran dos resultados para puertas y estados genéricos.
+\vspace{1mm}
+\begin{prop}
+    Sean $\Gamma, \Omega\subseteq \{1,\ldots, n\}$ y $\ket{a}$ un estado de $n$ cúbits, entonces:
+    \begin{equation}
+        \ket{a}A_{\Gamma}A_{\Omega}=\ket{a}A_{\Gamma\cup\Omega}A_{\Gamma\cap\Omega}
+    \end{equation}
+    \label{prop:11}
+    para cualquier puerta cuántica $A$.
+\end{prop}
+\begin{proof}[Demostración] 
+    $$\ket{a}A_{\Gamma}A_{\Omega}=\ket{a}\displaystyle\prod_{k\in\Gamma}A_k\prod_{r\in\Omega}A_r=\ket{a}\prod_{k\in\Gamma\cup\Omega}A_k\prod_{r\in\Gamma\cap\Omega}A_r$$
+    $$=\ket{a}A_{\Gamma\cup\Omega}A_{\Gamma\cap\Omega}$$
+\end{proof}
+\vspace{1mm}
+El último resultado  sintetiza el comportamiento de una puerta cuántica $A$ que cumple $A^2=I$, sobre un estado cualquiera.
+\vspace{1mm}
+\begin{prop}
+    Sean $\Gamma, \Omega\subseteq \{1,\ldots, n\}$, $\ket{a}$ un estado de $n$ cúbits y $A$ una puerta cuántica que actúa sobre un solo cúbit y cumple $A^2=I$ entonces:
+    $$\ket{a}A_{\Gamma}A_{\Omega}=\ket{a}A_{\Gamma\cup\Omega\backslash\Gamma\cap\Omega}$$
+\end{prop}
+\begin{proof}[Demostración] 
+    Por la \textit{Proposición \ref{prop:11}}, se sabe: 
+    \begin{align*}
+        \ket{a}A_{\Gamma}A_{\Omega}&=\ket{a}A_{\Gamma\cup\Omega}A_{\Gamma\cap\Omega}\\
+        &=\ket{a}\prod_{k\in\Gamma\cup\Omega}A_k\prod_{r\in\Gamma\cap\Omega}A_r\\
+        &=\ket{a}\prod_{k\in\Gamma\cup\Omega\backslash\Gamma\cap\Omega}A_k\prod_{r\in\Gamma\cap\Omega}A_r\prod_{i\in\Gamma\cap\Omega}A_i
+    \end{align*}
+    Ahora, simplemente aplicando nuestra hipótesis ($A^2=I$):
+    $$\ket{a}\prod_{k\in\Gamma\cup\Omega\backslash\Gamma\cap\Omega}A_k\prod_{r\in\Gamma\cap\Omega}A_r\prod_{i\in\Gamma\cap\Omega}A_i=\ket{a}\prod_{k\in\Gamma\cup\Omega\backslash\Gamma\cap\Omega}A_k$$
+    $$=\ket{a}A_{\Gamma\cup\Omega\backslash\Gamma\cap\Omega}$$
+    De esta forma se obtiene el resultado:
+    $$\ket{a}A_{\Gamma}A_{\Omega}=\ket{a}A_{\Gamma\cup\Omega\backslash\Gamma\cap\Omega}$$
+\end{proof}
+
+
+\section{Conclusiones}
+\label{seccion:6}
+
+La necesidad de desarrollar nuevos algoritmos criptográficos post-cuánticos para enfrentar las amenazas de los ordenadores cuánticos, como el algoritmo de Grover, es evidente. Sin embargo, la solución también puede encontrarse en la computación cuántica. Este trabajo presenta una notación optimizada para circuitos cuánticos, enfocándose en el algoritmo de Grover. La propuesta facilita la investigación e implementación eficiente tanto de algoritmos cuánticos que pueden comprometer muchos de nuestros sistemas criptográficos actuales, como de nuevos algoritmos de criptografía cuántica. Diversos ejemplos y resultados demuestran que la notación optimizada  mejora significativamente la notación tradicional, haciendo los circuitos   más comprensibles y  ayudando a  identificar patrones entre   puertas cuánticas y   estados de   cúbits, lo que puede usarse para optimizar diferentes circuitos cuánticos.
+
+Futuros trabajos  aplicarán estos resultados a distintos circuitos para reducir el número de puertas o cúbits necesarios y para obtener nuevos resultados con puertas aplicables en   ordenadores cuánticos reales. De hecho, los ordenadores cuánticos no permiten aplicar cualquier puerta cuántica de manera directa sino que la aplicación de la mayoría de puertas cuánticas se consigue mediante equivalencia entre operaciones. Por ello, conseguir resultados que involucren conjuntos concretos de puertas puede  conducir a una útil optimización y eficiencia de los circuitos. Además, se buscará la creación de una rutina para poder aplicar los resultados sobre cualquier circuito cuántico.
+
+\section*{Agradecimientos}
+
+Este trabajo ha sido posible gracias alproyecto PID2022-138933OB-I00 financiado  por MCIN/AEI/10.13039/501100011033/FEDER,UE y a las Cátedras  de Ciberseguridad  patrocinadas por Binter, y por INCIBE en el marco de los fondos del Plan de Recuperación, Transformación y Resiliencia, financiada por UE (NextGen). \\
+
+%%% inclusión de referencias
+\bibliographystyle{IEEEtran}
+\bibliography{Bibliografia}
+
+%\bibitem{JNIC2024} Nombre autores: "Título del trabajo", en {\it nombre
+%    revista/conferencia}, vol. x, n. y, pp. aa-bb, año.
+\end{document}
